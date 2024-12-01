@@ -1,0 +1,2 @@
+build-container-image: aoc2024-1-build
+registry: docker.io

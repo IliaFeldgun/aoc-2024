@@ -1,0 +1,2 @@
+FROM golang
+ENV PATH="$PATH:/usr/local/go/bin"
