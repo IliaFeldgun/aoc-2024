@@ -6,11 +6,11 @@ pip install strato-skipper
 
 ### Run make with skipper
 ```bash
-skipper make -i
+skipper make -i 1
 ```
 
 ### Run make without skipper
 
 ```bash
-make
+make 1
 ```
