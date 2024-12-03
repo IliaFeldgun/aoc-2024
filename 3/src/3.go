@@ -8,8 +8,7 @@ import (
 )
 
 func parseValues() {
-  dontr, _ := regexp.Compile(`don't\(\)`)
-  dor, _ := regexp.Compile(`do\(\)`)
+  r, _ := regexp.Compile(`(?s)(^(.*?mul\(\d+,\d+\))(?:(.*?don't\(\))))|((?:do\(\).*?)(mul\(\d+,\d+\))(?:.*?don't\(\))?)`)
   input_path := os.Args[1]
   binary_content, err := os.ReadFile(input_path)
   if err != nil {
@@ -17,16 +16,10 @@ func parseValues() {
   }
 
   sum := 0
-  split_by_dont := dontr.Split(string(binary_content), -1)
-  sum += getMulSum(split_by_dont[0])
-  for i := 1; i < len(split_by_dont); i++ {
-    split_by_do := dor.Split(split_by_dont[i], 2)
-    if len(split_by_do) > 1 {
-      log.Print(sum, " ", split_by_dont[i])
-      sum += getMulSum(split_by_do[1])
-      log.Print(sum, " ", split_by_do[1], " ", split_by_do[0])
-      log.Print(sum)
-    }
+  line_match := r.FindAllString(string(binary_content), -1)
+  for _, line := range line_match {
+    log.Print(line)
+    sum += getMulSum(line)
   }
   log.Print(sum)
 }
