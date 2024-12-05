@@ -30,7 +30,6 @@ func parseValues() ([][]int){
     }
     matrix = append(matrix, line)
   }
-  log.Print(matrix)
   return matrix
 }
 func isSafe(line []int) (bool) {
@@ -50,7 +49,6 @@ func isSafe(line []int) (bool) {
 }
 func makeSafe(line []int) (bool) {
   if isSafe(line) {
-    log.Print("originally safe", line)
     return true
   }
   is_safe := false
@@ -58,7 +56,6 @@ func makeSafe(line []int) (bool) {
     lineCopy := make([]int, len(line))
     copy(lineCopy, line)
     line_without_this := append(lineCopy[:i], lineCopy[i+1:]...)
-    log.Print("attempting", line)
     is_safe = isSafe(line_without_this)
     if is_safe {
       return true
@@ -73,7 +70,6 @@ func main() {
     line := matrix[i]
     is_safe := makeSafe(line)
     if is_safe {
-      log.Print(line)
       safe_lines++
     }
   }

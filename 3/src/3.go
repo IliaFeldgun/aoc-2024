@@ -18,7 +18,6 @@ func parseValues() {
   sum := 0
   line_match := r.FindAllString(string(binary_content), -1)
   for _, line := range line_match {
-    log.Print(line)
     sum += getMulSum(line)
   }
   log.Print(sum)

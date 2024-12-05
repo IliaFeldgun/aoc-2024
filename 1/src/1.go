@@ -46,9 +46,9 @@ func main() {
       diff = larray[i] - rarray[i]
     }
     sum += diff
-    log.Printf("%d ~ %d = %d", larray[i], rarray[i], diff)
   }
   log.Print("Total distance: ", sum)
+
   score := 0
   count := 0
   for i := 0; i < len(larray); i++ {
@@ -60,7 +60,6 @@ func main() {
         count++
       }
     }
-    log.Print(larray[i], " count: ", count)
     score += count * larray[i]
   }
   log.Print(score)

@@ -1,11 +1,20 @@
-.PHONY: 1 2 3
+.PHONY: test clean
 
-1:
-	cd $@ && $(MAKE)
+test: test/1.output test/2.output test/3.output
 
-2:
-	cd $@ && $(MAKE)
+build/%: %/main
+	mkdir -p $(shell dirname $@)
+	cp ./$< ./$@
+	ls $*
 
-3:
-	cd $@ && $(MAKE)
+%/main:
+	cd $* && $(MAKE)
+	ls $*
+
+test/%.output: build/%
+	mkdir -p test
+	time ./build/$* $*/input > ./$@
+
+clean:
+	@rm -rf ./build ./test
 

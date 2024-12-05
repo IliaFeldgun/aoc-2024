@@ -1,9 +1,13 @@
-.PHONY: all
+.PHONY: all output
 
 all: output
 
-output: 3 input
+output: main input
+	pwd
+	ls
 	./$^
 
-3: src/3.go
+main: src/*.go
 	go build $^
+	mv ./$(shell basename $$PWD) ./main
+
