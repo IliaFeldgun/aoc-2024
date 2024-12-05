@@ -8,16 +8,21 @@ import (
 	"regexp"
 )
 
-func parseValues() {
-	// r, _ := regexp.Compile(`(XMAS)|(SAMX)`)
-	// r, _ := regexp.Compile(`(XMAS)|(SAMX)|(X(?:.{9,11})M(?:.{9,11})A(?:.{9,11}S))|(S(?:.{9,11})A(?:.{9,11})M(?:.{9,11}X))`)
-	rxmas, _ := regexp.Compile(`XMAS`)
-	rsamx, _ := regexp.Compile(`SAMX`)
+func getInput() []byte {
 	input_path := os.Args[1]
 	binary_content, err := os.ReadFile(input_path)
 	if err != nil {
 		log.Fatal(err)
 	}
+	return binary_content
+}
+
+func parseValues() {
+	// r, _ := regexp.Compile(`(XMAS)|(SAMX)`)
+	// r, _ := regexp.Compile(`(XMAS)|(SAMX)|(X(?:.{9,11})M(?:.{9,11})A(?:.{9,11}S))|(S(?:.{9,11})A(?:.{9,11})M(?:.{9,11}X))`)
+	rxmas, _ := regexp.Compile(`XMAS`)
+	rsamx, _ := regexp.Compile(`SAMX`)
+	binary_content := getInput()
 	by_lines := bytes.Split(binary_content, []byte("\n"))
 	log.Print(string(bytes.Join(by_lines, []byte("\n"))))
 	by_columns := make([][]byte, len(by_lines[0]))
@@ -65,6 +70,33 @@ func parseValues() {
 	log.Print(len(samx_match) + len(xmas_match))
 }
 
+func parseValues2() {
+	rxmas, _ := regexp.Compile(`(SMASM)|(MSAMS)|(SSAMM)|(MMASS)`)
+	binary_content := getInput()
+	by_lines := bytes.Split(binary_content, []byte("\n"))
+	// three_by_three := [3][3]byte{}
+	flattened_three_by_threes := []byte{}
+	for line := 0; line < len(by_lines)-3; line++ {
+		log.Print("line: ", line)
+		for col := 0; col < len(by_lines[line])-2; col++ {
+			log.Print("col: ", col, "len: ", string(by_lines[line]))
+			for j := 0; j < 3; j++ {
+				for k := 0; k < 3; k++ {
+					// three_by_three[j][k] = by_lines[line+j][col+k]
+					if j+k != 1 && j+k != 3 {
+						flattened_three_by_threes = append(flattened_three_by_threes, by_lines[line+j][col+k])
+					}
+				}
+			}
+			flattened_three_by_threes = append(flattened_three_by_threes, []byte("XXXXX")...)
+		}
+	}
+	log.Print(string(flattened_three_by_threes))
+	xmas_match := rxmas.FindAllString(string(flattened_three_by_threes), -1)
+	log.Print(len(xmas_match))
+}
+
 func main() {
 	parseValues()
+	parseValues2()
 }
