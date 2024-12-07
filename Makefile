@@ -3,16 +3,14 @@
 test: test/1.output test/2.output test/3.output
 
 build/%: %/main
-	mkdir -p $(shell dirname $@)
-	cp ./$< ./$@
-	ls $*
+	@mkdir -p $(shell dirname $@)
+	@cp ./$< ./$@
 
 %/main:
 	cd $* && $(MAKE)
-	ls $*
 
 test/%.output: build/%
-	mkdir -p test
+	@mkdir -p test
 	time ./build/$* $*/input > ./$@
 
 clean:

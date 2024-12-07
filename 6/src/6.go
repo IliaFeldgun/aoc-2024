@@ -15,6 +15,17 @@ const (
 	LEFT
 )
 
+var (
+	bin_guard    = []byte("^")
+	bin_obstacle = []byte("#")
+	bin_empty    = []byte(".")
+	bin_up       = []byte("!")
+	bin_right    = []byte(">")
+	bin_down     = []byte("v")
+	bin_left     = []byte("<")
+	directions   = [][]byte{bin_up, bin_right, bin_down, bin_left}
+)
+
 func getInput() []byte {
 	input_path := os.Args[1]
 	binary_content, err := os.ReadFile(input_path)
@@ -24,52 +35,34 @@ func getInput() []byte {
 	return binary_content
 }
 
-func parseValues() {
-	binary_content := getInput()
-	bin_matrix := bytes.Split(binary_content, []byte("\n"))
-	guard := "^"
-	bin_guard := []byte(guard)
+func countSteps(matrix [][]byte) int {
+	count := 0
+	for row := range matrix {
+		for col := range matrix[row] {
+			for dir := range directions {
+				if matrix[row][col] == directions[dir][0] {
+					count++
+				}
+			}
+		}
+	}
+	return count
+}
+
+func indexOf(findChar []byte, matrix [][]byte) (int, int) {
 	init_i, init_j := -1, -1
-	for i := range bin_matrix {
-		for j := range bin_matrix[i] {
-			if bin_matrix[i][j] == bin_guard[0] {
+	for i := range matrix {
+		for j := range matrix[i] {
+			if matrix[i][j] == findChar[0] {
 				init_i = i
 				init_j = j
 			}
 		}
 	}
 	if init_i < 0 || init_j < 0 {
-		log.Fatal("Guard not found")
+		log.Fatal(string(findChar), " not found in \n", matrix)
 	}
-	i, j := init_i, init_j
-	visited := "X"
-	bin_visited := []byte(visited)
-	obstacle := "#"
-	bin_obstacle := []byte(obstacle)
-	direct_i := UP
-	// directions := []string{"^", ">", "v", "<"}
-	for i > -1 && j > -1 && i < len(bin_matrix)-1 && j < len(bin_matrix[0]) {
-		if bin_matrix[i][j] != bin_obstacle[0] {
-			bin_matrix[i][j] = bin_visited[0]
-			log.Print("Visited ", i, j)
-			i, j = moveGuard(i, j, direct_i)
-		} else {
-			log.Print("Found obstacle ", i, j)
-			i, j = backTrack(i, j, direct_i)
-			direct_i = rotateClockwise(direct_i)
-			log.Print("Switched direction ", direct_i)
-		}
-	}
-	count := 0
-	for row := range bin_matrix {
-		for col := range bin_matrix[row] {
-			if bin_matrix[row][col] == bin_visited[0] {
-				count++
-			}
-		}
-	}
-
-	log.Print(count)
+	return init_i, init_j
 }
 
 func rotateClockwise(direction Direction) Direction {
@@ -106,6 +99,84 @@ func backTrack(row int, col int, direction Direction) (int, int) {
 		row, col = moveGuard(row, col, RIGHT)
 	}
 	return row, col
+}
+
+func tryObstacle(matrix [][]byte, row int, col int) bool {
+	if matrix[row][col] != bin_empty[0] {
+		return false
+	}
+	matrix[row][col] = bin_obstacle[0]
+	visits := countVisits(matrix)
+	return visits == -1
+}
+
+func countVisits(matrix [][]byte) int {
+	init_row, init_col := indexOf(bin_guard, matrix)
+	matrix[init_row][init_col] = []byte("!")[0]
+	row, col := init_row, init_col
+	direct_i := UP
+	height := len(matrix)
+	width := len(matrix[0])
+	for row > -1 && col > -1 && row < height && col < width {
+		new_row, new_col := moveGuard(row, col, direct_i)
+		direct_opposite := rotateClockwise(rotateClockwise(direct_i))
+		if new_row == -1 || new_col == -1 || new_row == height || new_col == width {
+			break
+		}
+		switch matrix[new_row][new_col] {
+		case bin_empty[0]:
+			row = new_row
+			col = new_col
+			matrix[row][col] = directions[direct_i][0]
+		case bin_obstacle[0]:
+			direct_i = rotateClockwise(direct_i)
+		case directions[direct_i][0]:
+			return -1
+		case directions[direct_opposite][0]:
+			nn_row, nn_col := moveGuard(new_row, new_col, direct_i)
+			if matrix[nn_row][nn_col] == bin_obstacle[0] {
+				return -1
+			} else {
+				row = new_row
+				col = new_col
+				matrix[row][col] = directions[direct_i][0]
+			}
+		default:
+			row = new_row
+			col = new_col
+			matrix[row][col] = directions[direct_i][0]
+		}
+	}
+	return countSteps(matrix)
+}
+
+func parseValues() {
+	binary_content := getInput()
+	bin_matrix := allocate_matrix(binary_content)
+	// init_row, _ := indexOf(bin_guard, bin_matrix)
+	visit_count := countVisits(bin_matrix)
+	log.Print("Guard total cells visited ", visit_count)
+	loop_count := 0
+	for row := 0; row < len(bin_matrix); row++ {
+		for col := 0; col < len(bin_matrix); col++ {
+			if bin_matrix[row][col] != bin_empty[0] && bin_matrix[row][col] != bin_obstacle[0] {
+				matrix_copy := allocate_matrix(binary_content)
+				if tryObstacle(matrix_copy, row, col) {
+					loop_count++
+				}
+			}
+		}
+	}
+	log.Print("Found loops: ", loop_count)
+}
+
+func allocate_matrix(bin_content []byte) [][]byte {
+	bin_copy := bytes.Clone(bin_content)
+	bin_matrix := bytes.Split(bin_copy, []byte("\n"))
+	if len(bin_matrix[len(bin_matrix)-1]) == 0 {
+		bin_matrix = bin_matrix[:len(bin_matrix)-1]
+	}
+	return bin_matrix
 }
 
 func main() {
