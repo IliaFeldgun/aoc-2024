@@ -13,7 +13,7 @@ build/%: %/main
 
 test/%.output: build/%
 	mkdir -p test
-	time ./build/$* $*/input.example > ./$@
+	time ./build/$* $*/input > ./$@
 
 clean:
 	@rm -rf ./build ./test
