@@ -59,20 +59,25 @@ func parseValues() {
 			for j := range locations {
 				if i != j {
 					distance := getDistance(locations[i], locations[j])
-					double_distance := Location{distance.row * 2, distance.col * 2}
 					i_row := locations[i].row
 					j_row := locations[j].row
 					i_col := locations[i].col
 					j_col := locations[j].col
-					loc_a_row := i_row + double_distance.row
-					loc_a_col := i_col + double_distance.col
-					if i_row > j_row {
-						loc_a_row = i_row - double_distance.row
+					loc_a_row := i_row
+					loc_a_col := i_col
+					for loc_a_row < height && loc_a_col < width && loc_a_row > -1 && loc_a_col > -1 {
+						if i_row > j_row {
+							loc_a_row -= distance.row
+						} else {
+							loc_a_row += distance.row
+						}
+						if i_col > j_col {
+							loc_a_col -= distance.col
+						} else {
+							loc_a_col += distance.col
+						}
+						possible_antinode_locations = append(possible_antinode_locations, Location{loc_a_row, loc_a_col})
 					}
-					if i_col > j_col {
-						loc_a_col = i_col - double_distance.col
-					}
-					possible_antinode_locations = append(possible_antinode_locations, Location{loc_a_row, loc_a_col})
 				}
 			}
 		}
