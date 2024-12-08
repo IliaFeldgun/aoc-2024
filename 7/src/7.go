@@ -2,10 +2,16 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
+
+var possible_operators []string = []string{"+", "*", "||"}
+
+// var possible_operators []string = []string{"+", "*"}
 
 func reduce(parameters []int, operators []string) int {
 	sum := parameters[0]
@@ -15,21 +21,25 @@ func reduce(parameters []int, operators []string) int {
 			sum *= parameters[i+1]
 		case "+":
 			sum += parameters[i+1]
+		case "||":
+			var sb strings.Builder
+			sb.WriteString(strconv.Itoa(sum))
+			sb.WriteString(strconv.Itoa(parameters[i+1]))
+			sum, _ = strconv.Atoi(sb.String())
 		}
 	}
 	return sum
 }
 
-func tryMultiply(parameters []int, operators []string, index int) (int, []string) {
-	new_operators := make([]string, len(operators))
-	copy(new_operators, operators)
-	new_operators[index] = "*"
-	sum := reduce(parameters, new_operators)
-	return sum, new_operators
+func printEquation(result int, parameters []int, operators []string) {
+	output := fmt.Sprint(result, " = ", parameters[0])
+	for i, operator := range operators {
+		output = fmt.Sprint(output, operator, parameters[i+1])
+	}
+	log.Print(output)
 }
 
 func equalize(result int, parameters []int) bool {
-	possible_operators := []string{"+", "*"}
 	operator_count := len(parameters) - 1
 	permutations := [][]string{}
 	slots := make([]int, operator_count)
@@ -57,6 +67,7 @@ func equalize(result int, parameters []int) bool {
 	for _, permutation := range permutations {
 		trial_result := reduce(parameters, permutation)
 		if result == trial_result {
+			printEquation(result, parameters, permutation)
 			return true
 		}
 	}
@@ -82,7 +93,6 @@ func parseValues() {
 			count++
 			sum += result
 		}
-		log.Print(result, " = ", string(bytes.Join(parameters, []byte("+"))))
 	}
 	log.Print(count, ": ", sum)
 }
