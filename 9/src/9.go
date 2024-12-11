@@ -30,50 +30,10 @@ func parseValues() {
 		}
 		id_count++
 	}
-	log.Print(slotted_disk)
-	printDisk(slotted_disk)
+	// printDisk(slotted_disk)
 	defrag2(slotted_disk)
 	printDisk(slotted_disk)
 	log.Print(checksum(slotted_disk))
-	// for id, count := range files {
-	// 	id_char := string(id)
-	// 	disk = fmt.Sprint(disk,
-	// 		strings.Repeat(id_char, count), strings.Repeat(string(non_id), empties[id]))
-	// 	id_count++
-	// }
-	// defragged := make(map[int][]int)
-	// for id := len(files) - 1; id > 0; id-- {
-	// 	empty_count := 0
-	// 	for id_empty := 0; id_empty < len(empties); id_empty++ {
-	// 		defragged_list, ok := defragged[id]
-	// 		if !ok {
-	// 			defragged_list := []int{}
-	// 		}
-	// 		defragged_list = append(defragged_list, id_empty)
-	// 	}
-	// }
-
-	// for i := len(disk) - 1; i >= 0; i-- {
-	// 	file_id := disk[i]
-	// 	if file_id != non_id {
-	// 		inserted := false
-	// 		for j := 0; j < len(disk); j++ {
-	// 			if disk[j] == non_id && !inserted {
-	// 				disk = disk[:j] + string(file_id) + disk[j+1:]
-	// 				disk = disk[:i] + non_char + disk[i+1:]
-	// 				inserted = true
-	// 			}
-	// 		}
-	//
-	// 	}
-	// }
-	//
-	// checksum := 0
-	// for i := 1; i < len(disk); i++ {
-	// 	value, _ := strconv.Atoi(string(disk[i]))
-	// 	checksum += (i - 1) * value
-	// }
-	// log.Print(checksum)
 }
 
 func checksum(slotted_disk []int) int {
@@ -86,17 +46,54 @@ func checksum(slotted_disk []int) int {
 	return sum
 }
 
+func findFileStart(slotted_disk []int, end_index int, file_id int) (int, int) {
+	for slotted_disk[end_index] != file_id && end_index >= 0 {
+		end_index--
+	}
+	if end_index < 0 || slotted_disk[end_index] != file_id {
+		return -1, -1
+	}
+	file_start := end_index
+	for i := end_index; i > 0 && slotted_disk[i] == file_id; i-- {
+		file_start--
+	}
+	file_start++
+	return file_start, end_index
+}
+
+func findEmptyEnd(slotted_disk []int, start_index int) (int, int) {
+	for slotted_disk[start_index] != -1 {
+		start_index++
+	}
+	empty_end := start_index
+	file_id := slotted_disk[start_index]
+	if file_id != -1 {
+		return -1, -1
+	}
+	for i := start_index; i < len(slotted_disk) && slotted_disk[i] == file_id; i++ {
+		empty_end++
+	}
+	empty_end--
+	return start_index, empty_end
+}
+
 func defrag2(slotted_disk []int) {
-	defragged_index := len(slotted_disk) - 1
-	for starti := 0; starti <= defragged_index; starti++ {
-		if slotted_disk[starti] == -1 {
-			for defragged_index > starti {
-				if slotted_disk[defragged_index] != -1 {
-					slotted_disk[starti] = slotted_disk[defragged_index]
-					slotted_disk[defragged_index] = -1
-					break
+	last_id := slotted_disk[len(slotted_disk)-1]
+	file_index := len(slotted_disk) - 1
+	for id := last_id; id > 0; id-- {
+		file_start, file_end := findFileStart(slotted_disk, file_index, id)
+		file_index = file_start
+		for iempty := 0; iempty < file_start; iempty++ {
+			empty_start, empty_end := findEmptyEnd(slotted_disk, iempty)
+			iempty = empty_end + 1
+			file_length := file_end - file_start
+			empty_length := empty_end - empty_start
+			if file_length <= empty_length && empty_end < file_start {
+				for i := 0; i <= file_length; i++ {
+					slotted_disk[empty_start+i] = id
+					slotted_disk[file_start+i] = -1
 				}
-				defragged_index--
+				break
 			}
 		}
 	}
