@@ -26,49 +26,46 @@ func parseValues() {
 	binary_content := getInput()
 	r, _ := regexp.Compile(`[0-9]+`)
 	line_match := r.FindAllString(string(binary_content), -1)
-	int_stones := [MAX_LENGTH]int{}
+	int_map := map[int]int{}
 	for i, v := range line_match {
 		number, err := strconv.Atoi(v)
 		if err != nil {
 			log.Fatal(err)
 		}
-		int_stones[i] = number
-	}
-	// int_stones[length] = -1
-	// last_row := 0
-	// last_col := length - 1
-	// for _, v := range int_stones {
-	count := 0
-	current_length := len(line_match)
-	for range 25 {
-		for i := range current_length {
-			updated_stone, optional_second := updateStone(int_stones[i])
-			int_stones[i] = updated_stone
-			if optional_second != -1 {
-				int_stones[current_length] = optional_second
-				current_length++
-				int_stones[current_length] = -1
-			}
+		_, ok := int_map[i]
+		if !ok {
+			int_map[number] = 1
+		} else {
+			int_map[number] += 1
 		}
 	}
-	count += current_length
-	// for _, stone := range init_stones {
-	// 	int_stones[0] = stone
-	// 	int_stones[1] = -1
-	// 	current_length := 1
-	// 	for range 25 {
-	// 		for i := range current_length {
-	// 			updated_stone, optional_second := updateStone(int_stones[i])
-	// 			if optional_second != -1 {
-	// 				int_stones[current_length] = optional_second
-	// 				int_stones[current_length+1] = -1
-	// 				current_length++
-	// 			}
-	// 			int_stones[i] = updated_stone
-	// 		}
-	// 	}
-	// 	count += length
-	// }
+	for range 25 {
+		to_update := map[int]int{}
+		for k, v := range int_map {
+			stone := k
+			count := v
+			updated_stone, optional_second := updateStone(stone)
+			_, ok := to_update[updated_stone]
+			if !ok {
+				to_update[updated_stone] = count
+			} else {
+				to_update[updated_stone] += count
+			}
+			if optional_second != -1 {
+				_, ok := to_update[optional_second]
+				if !ok {
+					to_update[optional_second] = count
+				} else {
+					to_update[optional_second] += count
+				}
+			}
+		}
+		int_map = to_update
+	}
+	count := 0
+	for _, v := range int_map {
+		count += v
+	}
 	log.Print(count)
 }
 
