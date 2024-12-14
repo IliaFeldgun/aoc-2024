@@ -11,7 +11,7 @@ import (
 )
 
 // const MAX_LENGTH = 4294967296
-const MAX_LENGTH = 2294967296
+const MAX_LENGTH = 294967296
 
 func getInput() []byte {
 	input_path := os.Args[1]
@@ -26,32 +26,28 @@ func parseValues() {
 	binary_content := getInput()
 	r, _ := regexp.Compile(`[0-9]+`)
 	line_match := r.FindAllString(string(binary_content), -1)
-	// int_stones := [MAX_LENGTH]int{}
-	int_stones := []int{}
-	for _, v := range line_match {
+	int_stones := [MAX_LENGTH]int{}
+	for i, v := range line_match {
 		number, err := strconv.Atoi(v)
 		if err != nil {
 			log.Fatal(err)
 		}
-		// int_stones[i] = number
-		int_stones = append(int_stones, number)
+		int_stones[i] = number
 	}
 	// int_stones[length] = -1
 	// last_row := 0
 	// last_col := length - 1
 	// for _, v := range int_stones {
 	count := 0
-	// current_length := len(line_match)
-	current_length := len(int_stones)
-	for range 50 {
+	current_length := len(line_match)
+	for range 25 {
 		for i := range current_length {
 			updated_stone, optional_second := updateStone(int_stones[i])
 			int_stones[i] = updated_stone
 			if optional_second != -1 {
-				int_stones = append(int_stones, optional_second)
-				// int_stones[current_length] = optional_second
+				int_stones[current_length] = optional_second
 				current_length++
-				// int_stones[current_length] = -1
+				int_stones[current_length] = -1
 			}
 		}
 	}
