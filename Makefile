@@ -14,5 +14,5 @@ test/%.output: build/%
 	time ./build/$* $*/input > ./$@
 
 clean:
-	@rm -rf ./build ./test
+	@rm -rf ./build ./test */main
 
