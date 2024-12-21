@@ -13,6 +13,11 @@ type Location struct {
 	col int
 }
 
+type Line struct {
+	start Location
+	end   Location
+}
+
 func parseValues() {
 	binary_content := getInput()
 	bin_matrix := allocate_matrix(binary_content)
@@ -38,7 +43,7 @@ func parseValues() {
 	for region, plots := range regions {
 		fence_count := 0
 		for _, plot := range plots {
-			fence_count += getFences(bin_matrix, plot)
+			fence_count += len(getFences(bin_matrix, plot))
 		}
 		plot_count := len(plots)
 		sum += plot_count * fence_count
@@ -46,6 +51,23 @@ func parseValues() {
 
 	}
 	log.Print(sum)
+	// sides := map[Line]int{}
+	// for region, plots := range regions {
+	// 	for _, plot := range plots {
+	// 		fences := getFences(bin_matrix, plot)
+	// 		for i, l := range fences {
+	// 		}
+	// 	}
+	// }
+}
+
+// func getRowFenceLine(bin_matrix [][]byte, f Location) Line {
+// 	getSameValueNeighbors(bin_matrix [][]byte, location Location)
+//
+// }
+
+func applyDiff(l Location, diff Location) Location {
+	return Location{l.row + diff.row, l.col + diff.col}
 }
 
 func getRegionStart(bin_matrix [][]byte, char byte, location Location, region_starts map[Location]Location) map[Location]Location {
@@ -79,30 +101,54 @@ func getRegionStart(bin_matrix [][]byte, char byte, location Location, region_st
 	return region_starts
 }
 
-func getFences(bin_matrix [][]byte, location Location) int {
-	fences := 0
+func getFences(bin_matrix [][]byte, location Location) []Location {
+	fences := []Location{}
 	value := bin_matrix[location.row][location.col]
-	neighbors := getNeighbors(bin_matrix, location)
+	neighbors := genNeighbors(location)
 	for _, l := range neighbors {
-		if bin_matrix[l.row][l.col] != value {
-			fences++
+		n_value := getSafeValue(bin_matrix, l)
+		if n_value != value {
+			fences = append(fences, l)
 		}
 	}
-	fences += 4 - len(neighbors)
 	return fences
 }
 
-func getNeighbors(bin_matrix [][]byte, location Location) []Location {
-	row := location.row
-	col := location.col
-	neighbors := []Location{{row - 1, col}, {row, col - 1}, {row + 1, col}, {row, col + 1}}
+func getSameValueNeighbors(bin_matrix [][]byte, location Location) []Location {
+	neighbors := getNeighbors(bin_matrix, location)
 	good_neighbors := []Location{}
 	for _, l := range neighbors {
-		if l.row > -1 && l.col > -1 && l.row < len(bin_matrix) && l.col < len(bin_matrix[0]) {
-			good_neighbors = append(good_neighbors, Location{row: l.row, col: l.col})
+		if bin_matrix[l.row][l.col] != bin_matrix[location.row][location.col] {
+			good_neighbors = append(good_neighbors, Location{l.row, l.col})
 		}
 	}
 	return good_neighbors
+}
+
+func getNeighbors(bin_matrix [][]byte, location Location) []Location {
+	neighbors := genNeighbors(location)
+	good_neighbors := []Location{}
+	for _, l := range neighbors {
+		value := getSafeValue(bin_matrix, l)
+		if value != 0 {
+			good_neighbors = append(good_neighbors, Location{l.row, l.col})
+		}
+	}
+	return good_neighbors
+}
+
+func genNeighbors(location Location) []Location {
+	row := location.row
+	col := location.col
+	neighbors := []Location{{row - 1, col}, {row, col - 1}, {row + 1, col}, {row, col + 1}}
+	return neighbors
+}
+
+func getSafeValue(bin_matrix [][]byte, l Location) byte {
+	if l.row > -1 && l.col > -1 && l.row < len(bin_matrix) && l.col < len(bin_matrix[0]) {
+		return bin_matrix[l.row][l.col]
+	}
+	return 0
 }
 
 func getInput() []byte {
